@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:qms/widgets/ok_alert.dart';
+
+import '../constants.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -10,103 +11,136 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Create a global key that uniquely identifies the Form widget
+  // Using a GlobalKey is the recommended way to access the form
+  final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
   bool isHidden = true;
   IconData suffixIcon = Icons.visibility_off;
+  bool inProgress = false;
+
+  set inProgressState(bool state) {
+    setState(() {
+      inProgress = state;
+    });
+  }
+
+  void login() async {
+    if (_formKey.currentState!.validate()) {
+      inProgressState = true;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Processing Data')),
+      );
+      await Future.delayed(const Duration(seconds: 4));
+      inProgressState = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: kScreenPadding,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(
-            Icons.login_rounded,
-            size: 150,
-            color: Colors.black,
+          const Flexible(
+            child: Icon(
+              Icons.login_rounded,
+              size: kScreenIconSize,
+              color: Colors.black,
+            ),
           ),
           const Text(
             'Login',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
+            style: kFont32Bold,
           ),
-          TextField(
-            onChanged: (inputEmail) {
-              email = inputEmail;
-            },
-            decoration: const InputDecoration(
-              icon: Icon(Icons.alternate_email_outlined),
-              hintText: 'Email',
-            ),
-          ),
-          TextField(
-            obscureText: isHidden,
-            enableSuggestions: false,
-            autocorrect: false,
-            onChanged: (inputPassword) {
-              password = inputPassword;
-            },
-            decoration: InputDecoration(
-              icon: const Icon(Icons.lock_outline),
-              hintText: 'Password',
-              suffixIcon: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isHidden = isHidden ? false : true;
-                    suffixIcon = suffixIcon == Icons.visibility
-                        ? Icons.visibility_off
-                        : Icons.visibility;
-                  });
-                },
-                child: Icon(suffixIcon),
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextFormField(
+                    // The validator receives the text that the user has entered.
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the email!';
+                      }
+                      return null;
+                    },
+                    onChanged: (inputEmail) {
+                      email = inputEmail;
+                    },
+                    decoration: const InputDecoration(
+                      icon: Icon(Icons.alternate_email_outlined),
+                      hintText: 'Email',
+                    ),
+                  ),
+                  TextFormField(
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the password!';
+                      }
+                      return null;
+                    },
+                    obscureText: isHidden,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    onChanged: (inputPassword) {
+                      password = inputPassword;
+                    },
+                    decoration: InputDecoration(
+                      icon: const Icon(Icons.lock_outline),
+                      hintText: 'Password',
+                      suffixIcon: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isHidden = isHidden ? false : true;
+                            suffixIcon = suffixIcon == Icons.visibility
+                                ? Icons.visibility_off
+                                : Icons.visibility;
+                          });
+                        },
+                        child: Icon(suffixIcon),
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      enableFeedback: true,
+                      minimumSize: MaterialStateProperty.all(
+                        const Size.fromHeight(50),
+                      ),
+                    ),
+                    onPressed: inProgress ? null : login,
+                    child: const Text('Login'),
+                  ),
+                ],
               ),
             ),
           ),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: Alignment.center,
             child: TextButton(
+              style: const ButtonStyle(
+                enableFeedback: true,
+              ),
               child: const Text('Forget Password?'),
               onPressed: () {},
             ),
-          ),
-          ElevatedButton(
-            style: ButtonStyle(
-              minimumSize: MaterialStateProperty.all(
-                const Size.fromHeight(50),
-              ),
-            ),
-            onPressed: () {
-              if (email.isEmpty || password.isEmpty) {
-                OkAlert(
-                  title: 'Login Feedback',
-                  content: 'Empty username or password!',
-                  context: context,
-                ).show();
-              } else {
-                OkAlert(
-                  title: 'Login Feedback',
-                  content: '$email $password',
-                  context: context,
-                ).show();
-              }
-            },
-            child: const Text('Login'),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text('New to QMS ?'),
               TextButton(
-                onPressed: () {},
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text('Register'),
+                style: const ButtonStyle(
+                  enableFeedback: true,
                 ),
+                child: const Text('Register'),
+                onPressed: () {},
               ),
             ],
           ),

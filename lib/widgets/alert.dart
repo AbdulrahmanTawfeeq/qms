@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
-class OkAlert extends StatelessWidget {
+class Alert extends StatelessWidget {
   final String title;
   final String content;
   final BuildContext context;
+  final String btnText;
 
-  const OkAlert(
-      {required this.title,
-      required this.content,
-      required this.context,
-      Key? key})
-      : super(key: key);
+  const Alert({
+    required this.title,
+    required this.content,
+    required this.context,
+    required this.btnText,
+    Key? key,
+  }) : super(key: key);
 
   void show() {
     showDialog<String>(
@@ -27,8 +29,11 @@ class OkAlert extends StatelessWidget {
       content: Text(content),
       actions: <Widget>[
         TextButton(
-          onPressed: () => Navigator.pop(context, 'OK'),
-          child: const Text('OK'),
+          style: const ButtonStyle(
+            enableFeedback: true,
+          ),
+          child: Text(btnText),
+          onPressed: () => Navigator.pop(context, btnText),
         ),
       ],
     );
